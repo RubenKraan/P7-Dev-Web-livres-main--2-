@@ -1,11 +1,16 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const booksRoute = require("./routes/booksRoute");
 
+
+
+
+const booksRoute = require("./routes/booksRoute");
+require("dotenv").config();
+const userRoute = require("./routes/user");
 mongoose
   .connect(
-    `mongodb+srv://ruru:@cluster0.nfw1i0c.mongodb.net/?retryWrites=true&w=majority`,
+    `mongodb+srv://${process.env.USERNAME}:${process.env.PASSWORD}@cluster0.nfw1i0c.mongodb.net/?retryWrites=true&w=majority`,
     { useNewUrlParser: true, useUnifiedTopology: true }
   )
   .then(() => console.log("Connexion à MongoDB réussie !"))
@@ -29,10 +34,12 @@ app.use((req, res, next) => {
 });
 
 app.use("/api/books", booksRoute);
+app.use("/api/auth/", userRoute);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
 module.exports = app;
+

@@ -1,35 +1,20 @@
-
 const express = require("express");
 const router = express.Router();
-const Books = require("../models/Books");
+const bookCtrl = require("../controllers/booksRoute");
+const auth = require("../middleware/auth");
 
-router.post("/", (req, res, next) => {
-  delete req.body._id;
-  const book = new Books({
-    ...req.body,
-  });
-  book
-    .save()
-    .then(() => res.status(201).json({ message: "objet enregistré !" }))
-    .catch((error) => res.status(400).json({ error }));
-});
+router.post("/", auth, bookCtrl.createBook);
 
-router.put("/:id", (req, res, next) => {
-  Books.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id })
-    .then(() => res.status(200).json({ message: "objet modifié" }))
-    .catch((error) => res.status(400).json({ error }));
-});
+router.put("/:id", auth, bookCtrl.modifyBook);
 
-router.get("/", (req, res, next) => {
-  Books.find()
-    .then((books) => res.status(200).json(books))
-    .catch((error) => res.status(400).json({ error }));
-});
+router.get("/", bookCtrl.getAllBook);
 
-router.delete("/:id", (req, res, next) => {
-  Books.deleteOne({ _id: req.params.id })
-    .then(() => res.status(200).json({ message: "objet supprimé" }))
-    .catch((error) => res.status(400).json({ error }));
-});
+router.get("/:id", bookCtrl.getOneBook);
+
+router.get("/bestrating", bookCtrl.getBestRatedBooks);
+
+router.delete("/:id", auth, bookCtrl.deleteBook);
+
+router.post("/:id/rating", bookCtrl.rateBook);
 
 module.exports = router;

@@ -10,7 +10,7 @@ const booksSchema = mongoose.Schema({
   imageUrl: { type: String, required: true },
   year: { type: Number, required: true },
   genre: { type: String, required: true },
-  rating: [booksRatingSchema],
+  ratings: [booksRatingSchema],
   averageRating: { type: Number, required: true },
 });
 
