@@ -3,25 +3,50 @@ const { unlink } = require("../app");
 const Book = require("../models/Books");
 const fs = require("fs");
 
+const sharp = require("sharp");
+
 exports.createBook = (req, res, next) => {
   const BookObject = JSON.parse(req.body.book);
   delete BookObject._id;
   delete BookObject._userId;
-  const book = new Book({
-    ...BookObject,
-    userId: req.auth.userId,
-    imageUrl: `${req.protocol}://${req.get("host")}/images/${
-      req.file.filename
-    }`,
-  });
 
-  book
-    .save()
-    .then(() => {
-      res.status(201).json({ message: "objet crée" });
-    })
-    .catch((error) => {
-      res.status(400).json({ error });
+  const imagePath = `images/${req.file.filename}`;
+  const webpFormat = `images/${req.file.filename}.webp`;
+
+  sharp(imagePath)
+    .webp({ quality: 80 })
+    .toFile(webpFormat, (conversionError, info) => {
+      if (conversionError) {
+        return res
+          .status(500)
+          .json({ error: "Erreur lors de la conversion de l'image en WebP" });
+      }
+
+      fs.unlink(imagePath, (unlinkError) => {
+        if (unlinkError) {
+          console.error(
+            "Erreur lors de la suppression de l'image d'origine:",
+            unlinkError
+          );
+        }
+
+        const book = new Book({
+          ...BookObject,
+          userId: req.auth.userId,
+          imageUrl: `${req.protocol}://${req.get("host")}/images/${
+            req.file.filename
+          }.webp`,
+        });
+
+        book
+          .save()
+          .then(() => {
+            res.status(201).json({ message: "Objet créé" });
+          })
+          .catch((error) => {
+            res.status(400).json({ error });
+          });
+      });
     });
 };
 
@@ -122,11 +147,9 @@ exports.getBestRatedBooks = (req, res, next) => {
     });
 };
 
-
 exports.rateBook = (req, res, next) => {
   const userId = req.body.userId;
   const rating = req.body.rating;
-  const bookId = req.params.id;
 
 
   if (rating < 0 || rating > 5) {
@@ -135,14 +158,15 @@ exports.rateBook = (req, res, next) => {
       .json({ error: "La note doit être comprise entre 0 et 5." });
   }
 
-
   Book.findById(req.params.id)
     .then((book) => {
       if (!book) {
         return res.status(404).json({ error: "Livre introuvable." });
       }
 
-      const userRating = book.rating.find((rating) => rating.userId === userId);
+      const userRating = book.ratings.find(
+        (rating) => rating.userId === userId
+      );
       if (userRating) {
         return res
           .status(400)
@@ -153,9 +177,8 @@ exports.rateBook = (req, res, next) => {
         userId: userId,
         grade: rating,
       };
-      book.rating.push(newRating);
-      book.averageRating = calculateAverageRating(book.rating);
-
+      book.ratings.push(newRating);
+      book.averageRating = calculateAverageRating(book.ratings);
 
       return book.save();
     })
