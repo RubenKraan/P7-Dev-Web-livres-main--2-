@@ -1,10 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-
-
-
-
+const path = require("path");
 const booksRoute = require("./routes/booksRoute");
 require("dotenv").config();
 const userRoute = require("./routes/user");
@@ -35,7 +32,7 @@ app.use((req, res, next) => {
 
 app.use("/api/books", booksRoute);
 app.use("/api/auth/", userRoute);
-
+app.use("/images", express.static(path.join(__dirname, "images")));
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

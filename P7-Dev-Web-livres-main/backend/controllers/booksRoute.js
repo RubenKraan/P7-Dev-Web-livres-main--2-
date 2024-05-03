@@ -1,8 +1,7 @@
-
 const Book = require("../models/Books");
 
 exports.createBook = (req, res, next) => {
-  delete req.body._id;
+  console.log("les donner", req.body);
   const book = new Book({
     ...req.body,
   });
@@ -47,3 +46,58 @@ exports.getBestRatedBooks = (req, res, next) => {
       res.status(500).json({ error: "Internal server error" });
     });
 };
+
+// controllers/booksRoute.js
+exports.rateBook = (req, res, next) => {
+  const userId = req.body.userId;
+  const rating = req.body.rating;
+
+  // Assurez-vous que la note est entre 0 et 5
+  if (rating < 0 || rating > 5) {
+    return res
+      .status(400)
+      .json({ error: "La note doit être comprise entre 0 et 5." });
+  }
+
+  // Recherchez le livre par son ID
+  Book.findById(req.params.id)
+    .then((book) => {
+      if (!book) {
+        return res.status(404).json({ error: "Livre introuvable." });
+      }
+
+      const userRating = book.rating.find((rating) => rating.userId === userId);
+      if (userRating) {
+        return res
+          .status(400)
+          .json({ error: "L'utilisateur a déjà noté ce livre." });
+      }
+
+      const newRating = {
+        userId: userId,
+        grade: rating,
+      };
+      book.rating.push(newRating);
+      book.averageRating = calculateAverageRating(book.rating);
+
+      // Sauvegardez les modifications
+      return book.save();
+    })
+    .then((updatedBook) => {
+      res.status(200).json(updatedBook);
+    })
+    .catch((error) => {
+      res
+        .status(500)
+        .json({ error: "Erreur serveur lors de la notation du livre." });
+    });
+};
+
+function calculateAverageRating(ratings) {
+  if (ratings.length === 0) {
+    return 0;
+  }
+
+  const totalRating = ratings.reduce((sum, rating) => sum + rating.grade, 0);
+  return totalRating / ratings.length;
+}
