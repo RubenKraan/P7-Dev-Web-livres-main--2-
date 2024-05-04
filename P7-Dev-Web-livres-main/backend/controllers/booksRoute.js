@@ -1,14 +1,12 @@
 const { unlink } = require("../app");
 const Book = require("../models/Books");
 const fs = require("fs");
-
 const sharp = require("sharp");
 
 exports.createBook = (req, res, next) => {
   const BookObject = JSON.parse(req.body.book);
   delete BookObject._id;
   delete BookObject._userId;
-
   const imagePath = `images/${req.file.filename}`;
   const webpFormat = `images/${req.file.filename}.webp`;
 
