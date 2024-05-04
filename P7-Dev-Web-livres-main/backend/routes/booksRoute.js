@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const bookCtrl = require("../controllers/booksRoute");
 const auth = require("../middleware/auth");
-const multer = require("../middleware/multerconfig");
+const multer = require("../middleware/multer-config");
 
 router.post("/", auth, multer, bookCtrl.createBook);
 router.put("/:id", auth, multer, bookCtrl.modifyBook);
