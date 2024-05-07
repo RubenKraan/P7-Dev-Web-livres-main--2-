@@ -4,7 +4,6 @@ const Book = require("../models/Books");
 const fs = require("fs");
 const sharp = require("sharp");
 
-// Define the createBook function, which handles the creation of a new book object in the database
 exports.createBook = (req, res, next) => {
   // Parse the book object from the request body
   const BookObject = JSON.parse(req.body.book);
@@ -77,10 +76,9 @@ exports.modifyBook = (req, res, next) => {
       const userRating = book.ratings.find(
         (rating) => rating.userId === req.auth.userId
       );
-
       // If the user is not authorized to modify the book, return a 401 Unauthorized status with an error message.
       if (!userRating) {
-        return res.status(401).json({ message: "Non autorisé" });
+        return res.status(409).json({ message: "Non autorisé" });
       }
 
       // Initialize a bookObject variable to store the updated book data.
@@ -199,7 +197,7 @@ exports.deleteBook = (req, res, next) => {
 
       // Find the user's rating for the book
       const userRating = book.ratings.find(
-        (rating) => rating.userId === req.auth.userId
+        (rating) => rating.userId[0] === req.auth.userId
       );
 
       // If the user has no rating, return a 403 error

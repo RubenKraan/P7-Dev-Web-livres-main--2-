@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 import React, { useState } from 'react';
 import axios from 'axios';
 import * as PropTypes from 'prop-types';
@@ -40,7 +41,7 @@ function SignIn({ setUser }) {
       }
     } catch (err) {
       console.log(err);
-      setNotification({ error: true, message: err.message });
+      setNotification({ error: true, message: 'Paire identifiant mot de passe inccorecte' });
       console.log('Some error occured during signing in: ', err);
     } finally {
       setIsLoading(false);

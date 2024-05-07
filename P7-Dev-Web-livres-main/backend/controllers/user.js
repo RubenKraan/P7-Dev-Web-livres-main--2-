@@ -29,11 +29,9 @@ exports.login = (req, res, next) => {
   // Find a user with the provided email
   User.findOne({ email: req.body.email })
    .then((user) => {
-      if (user === null) {
+      if (!user) {
         // Return an error response with a status code of 401 if the user is not found
-        res
-         .status(401)
-         .json({ message: "Paire identifiant mot de passe incorrecte" });
+         return res.status(401).json({ message: "Paire identifiant mot de passe incorrecte" });
       } else {
         // Compare the provided password with the hashed password in the database
         bcrypt
@@ -41,9 +39,7 @@ exports.login = (req, res, next) => {
          .then((valid) => {
             if (!valid) {
               // Return an error response with a status code of 401 if the passwords do not match
-              res
-               .status(401)
-               .json({ message: "Paire identifiant mot de passe inccorecte" });
+              res.status(401).json({ message: "Paire identifiant mot de passe inccorecte" });
             } else {
               // Generate a JWT with the user's ID and return it in the response
               res.status(200).json({
